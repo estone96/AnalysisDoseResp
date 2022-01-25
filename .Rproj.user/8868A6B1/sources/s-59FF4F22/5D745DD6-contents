@@ -1,0 +1,292 @@
+---
+title: "AnalysisDoseResp"
+output: html_document
+params:
+  outcome_1_name : 'mskAE'
+  outcome_2_name : 'osteoporosis'
+  outcome_3_name : 'osteonecrosis'
+  outcome_4_name : 'bonefracture'
+---
+
+```{r setup, results=FALSE, include=FALSE}
+require('kableExtra')
+```
+
+## Results Summary
+
+```{r summary_main, echo = FALSE}
+target_outcome = c(params$outcome_1_name,params$outcome_2_name,params$outcome_3_name,params$outcome_4_name)
+vanilla_logistic = read.csv('output_all.csv')
+mskae_svm = read.csv('outcome1 _result_svm_all.csv')[,-1]
+porosis_svm = read.csv('outcome2 _result_svm_all.csv')[,-1]
+necrosis_svm = read.csv('outcome3 _result_svm_all.csv')[,-1]
+frac_svm = read.csv('outcome4 _result_svm_all.csv')[,-1]
+weight_logistic = read.csv('output_all_weight.csv')
+
+mskAE = rbind(c('logistic regression',vanilla_logistic[c(1,2,3),'outcome1']),
+              t(mskae_svm),
+              c('weighted logistic regression',weight_logistic[c(1,2,3),'outcome1']))
+
+rownames(mskAE) = rep(target_outcome[1],6)
+
+porosis = rbind(c('logistic regression',vanilla_logistic[c(1,2,3),'outcome3']),
+                t(porosis_svm),
+                c('weighted logistic regression',weight_logistic[c(1,2,3),'outcome3']))
+
+rownames(porosis) = rep(target_outcome[3],6)
+
+necrosis= rbind(c('logistic regression',vanilla_logistic[c(1,2,3),'outcome2']),
+                t(necrosis_svm),
+                c('weighted logistic regression',weight_logistic[c(1,2,3),'outcome2']))
+
+rownames(necrosis) = rep(target_outcome[2],6)
+
+pathologicfrac= rbind(c('logistic regression',vanilla_logistic[c(1,2,3),'outcome4']),
+                      t(frac_svm),
+                      c('weighted logistic regression',weight_logistic[c(1,2,3),'outcome4']))
+
+rownames(pathologicfrac) = rep(target_outcome[4],6)
+
+final_output = rbind(mskAE, porosis, necrosis, pathologicfrac)
+colnames(final_output) = c('Model Type','AUC','Cutoff(p)','Cutoff(mg)')
+
+final_output %>%  kbl() %>%  kable_styling()
+```
+
+## Logistic Model Results
+
+# Without Propensity Score Consideration
+
+```{r summary, echo = FALSE, warning=FALSE}
+data = read.csv('output_all.csv')
+colnames(data) = c('Output',params$outcome_1_name,params$outcome_2_name,params$outcome_3_name,params$outcome_4_name)
+data %>%  kbl() %>%  kable_styling()
+knitr::include_graphics('output_all.jpg')
+
+```
+
+- Model Performance Analysis According to Cutoff Values
+
+```{r summary1-2, echo = FALSE, warning=FALSE}
+print(params$outcome_1_name)
+data = read.csv('output_all_cutoff_outcome1.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('output_all_cutoff_diagnosis_outcome1.csv')
+data %>%  kbl() %>%  kable_styling()
+
+print(params$outcome_2_name)
+data = read.csv('output_all_cutoff_outcome2.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('output_all_cutoff_diagnosis_outcome2.csv')
+data %>%  kbl() %>%  kable_styling()
+
+print(params$outcome_3_name)
+data = read.csv('output_all_cutoff_outcome3.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('output_all_cutoff_diagnosis_outcome3.csv')
+data %>%  kbl() %>%  kable_styling()
+
+print(params$outcome_4_name)
+data = read.csv('output_all_cutoff_outcome4.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('output_all_cutoff_diagnosis_outcome4.csv')
+data %>%  kbl() %>%  kable_styling()
+```
+
+
+# With Propensity Score Consideration
+
+```{r summary2, echo = FALSE, warning=FALSE}
+data = read.csv('output_all_weight.csv')
+colnames(data) = c('Output',params$outcome_1_name,params$outcome_2_name,params$outcome_3_name,params$outcome_4_name)
+data %>%  kbl() %>%  kable_styling()
+knitr::include_graphics('output_all_weight.jpg')
+```
+
+- Model Performance Analysis According to Cutoff Values
+
+```{r summary2-1, echo = FALSE, warning=FALSE}
+print(params$outcome_1_name)
+data = read.csv('output_all_weight_cutoff_outcome1.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('output_all_weight_cutoff_diagnosis_outcome1_weighted.csv')
+data %>%  kbl() %>%  kable_styling()
+
+print(params$outcome_2_name)
+data = read.csv('output_all_weight_cutoff_outcome2.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('output_all_weight_cutoff_diagnosis_outcome2_weighted.csv')
+data %>%  kbl() %>%  kable_styling()
+
+print(params$outcome_3_name)
+data = read.csv('output_all_weight_cutoff_outcome3.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('output_all_weight_cutoff_diagnosis_outcome3_weighted.csv')
+data %>%  kbl() %>%  kable_styling()
+
+print(params$outcome_4_name)
+data = read.csv('output_all_weight_cutoff_outcome4.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('output_all_weight_cutoff_diagnosis_outcome4_weighted.csv')
+data %>%  kbl() %>%  kable_styling()
+```
+
+
+## SVM Model Results
+
+- Diagnostic Plots
+```{r svm_plot, echo=FALSE}
+print(params$outcome_1_name)
+knitr::include_graphics('outcome1_result_svm.png')
+
+print(params$outcome_2_name)
+knitr::include_graphics('outcome2_result_svm.png')
+
+print(params$outcome_3_name)
+knitr::include_graphics('outcome3_result_svm.png')
+
+print(params$outcome_4_name)
+knitr::include_graphics('outcome4_result_svm.png')
+```
+
+# SVM without Propensity Score Consideration
+
+- Model Performance Analysis According to Cutoff Values
+
+```{r summary3-1, echo = FALSE, warning=FALSE}
+print(params$outcome_1_name)
+data = read.csv('outcome1 _result_svm.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome1_cutoff_diagnosis_svm.csv')
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome1 _result_ocsvm.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome1_cutoff_diagnosis_ocsvm.csv')
+data %>%  kbl() %>%  kable_styling()
+
+
+
+
+print(params$outcome_2_name)
+data = read.csv('outcome2 _result_svm.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome2_cutoff_diagnosis_svm.csv')
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome2 _result_ocsvm.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome2_cutoff_diagnosis_ocsvm.csv')
+data %>%  kbl() %>%  kable_styling()
+
+
+
+
+print(params$outcome_3_name)
+data = read.csv('outcome3 _result_svm.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome3_cutoff_diagnosis_svm.csv')
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome3 _result_ocsvm.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome3_cutoff_diagnosis_ocsvm.csv')
+data %>%  kbl() %>%  kable_styling()
+
+
+
+
+print(params$outcome_4_name)
+data = read.csv('outcome4 _result_svm.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome4_cutoff_diagnosis_svm.csv')
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome4 _result_ocsvm.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome4_cutoff_diagnosis_ocsvm.csv')
+data %>%  kbl() %>%  kable_styling()
+```
+
+# SVM with Propensity Score Consideration
+
+- Model Performance Analysis According to Cutoff Values
+
+```{r summary4-1, echo = FALSE, warning=FALSE}
+print(params$outcome_1_name)
+data = read.csv('outcome1 _result_svm_ps.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome1_cutoff_diagnosis_svm_ps.csv')
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome1 _result_ocsvm_ps.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome1_cutoff_diagnosis_ocsvm_ps.csv')
+data %>%  kbl() %>%  kable_styling()
+
+
+
+
+print(params$outcome_2_name)
+data = read.csv('outcome2 _result_svm_ps.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome2_cutoff_diagnosis_svm_ps.csv')
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome2 _result_ocsvm_ps.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome2_cutoff_diagnosis_ocsvm_ps.csv')
+data %>%  kbl() %>%  kable_styling()
+
+
+
+
+print(params$outcome_3_name)
+data = read.csv('outcome3 _result_svm_ps.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome3_cutoff_diagnosis_svm_ps.csv')
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome3 _result_ocsvm_ps.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome3_cutoff_diagnosis_ocsvm_ps.csv')
+data %>%  kbl() %>%  kable_styling()
+
+
+
+
+print(params$outcome_4_name)
+data = read.csv('outcome4 _result_svm_ps.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome4_cutoff_diagnosis_svm_ps.csv')
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome4 _result_ocsvm_ps.csv')[1,]
+data %>%  kbl() %>%  kable_styling()
+
+data = read.csv('outcome4_cutoff_diagnosis_ocsvm_ps.csv')
+data %>%  kbl() %>%  kable_styling()
+```

@@ -1,0 +1,39 @@
+return_output = function(){
+  target_outcome = c('mskAE','osteonecrosis','osteoporosis','pathologicfrac')
+  vanilla_logistic = read.csv('output_all.csv')
+  mskae_svm = read.csv('outcome1 _result_svm_all.csv')[,-1]
+  porosis_svm = read.csv('outcome2 _result_svm_all.csv')[,-1]
+  necrosis_svm = read.csv('outcome3 _result_svm_all.csv')[,-1]
+  frac_svm = read.csv('outcome4 _result_svm_all.csv')[,-1]
+  weight_logistic = read.csv('output_all_weight.csv')
+  
+  mskAE = rbind(c('logistic regression',vanilla_logistic[c(1,2,3),'outcome1']),
+                t(mskae_svm),
+                c('weighted logistic regression',weight_logistic[c(1,2,3),'outcome1']))
+  
+  rownames(mskAE) = rep(target_outcome[1],6)
+  
+  porosis = rbind(c('logistic regression',vanilla_logistic[c(1,2,3),'outcome3']),
+                  t(porosis_svm),
+                  c('weighted logistic regression',weight_logistic[c(1,2,3),'outcome3']))
+  
+  rownames(porosis) = rep(target_outcome[3],6)
+  
+  necrosis= rbind(c('logistic regression',vanilla_logistic[c(1,2,3),'outcome2']),
+                  t(necrosis_svm),
+                  c('weighted logistic regression',weight_logistic[c(1,2,3),'outcome2']))
+  
+  rownames(necrosis) = rep(target_outcome[2],6)
+  
+  pathologicfrac= rbind(c('logistic regression',vanilla_logistic[c(1,2,3),'outcome4']),
+                        t(frac_svm),
+                        c('weighted logistic regression',weight_logistic[c(1,2,3),'outcome4']))
+  
+  rownames(pathologicfrac) = rep(target_outcome[4],6)
+  
+  final_output = rbind(mskAE, porosis, necrosis, pathologicfrac)
+  colnames(final_output) = c('Model Type','AUC','Cutoff(p)','Cutoff(mg)')
+  
+  print(final_output)
+  write.csv(final_output, 'final_output.csv')
+}
