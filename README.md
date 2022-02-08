@@ -1,4 +1,4 @@
-# Package Generator for Dose Study
+# Report Generator for Dose Study
 
 This is the repository for report generator for dose study.
 
